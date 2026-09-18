@@ -1,66 +1,100 @@
 package edu.ku.bookapi.controller;
 
+import edu.ku.bookapi.model.BookInput;
 import edu.ku.bookapi.model.Books;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
 @RequestMapping("/api/v1/books")
 public class BookController {
 
-    private final List<Books> books = List.of(
+    // زموږ موقتي کتابونه
+    private final List<Books> books =
+            new CopyOnWriteArrayList<>(
+                    List.of(
+                            new Books(
+                                    101L,
+                                    "Clean Code",
+                                    "Robert C. Martin",
+                                    "9780132350884",
+                                    2008,
+                                    "Software Engineering"
+                            ),
 
-            new Books(
-                    1L,
-                    "Clean Code",
-                    "khan",
-                    "9780132350884",
-                    2008,
-                    "Software Engineering"
-            ),
+                            new Books(
+                                    102L,
+                                    "Effective Java",
+                                    "Joshua Bloch",
+                                    "9780134685991",
+                                    2018,
+                                    "Java"
+                            ),
 
-            new Books(
-                    2L,
-                    "Effective Java",
-                    "jan",
-                    "9780134685991",
-                    2018,
-                    "Java"
-            ),
+                            new Books(
+                                    103L,
+                                    "Spring in Action",
+                                    "Craig Walls",
+                                    "9781617297571",
+                                    2022,
+                                    "Spring"
+                            )
+                    )
+            );
 
-            new Books(
-                    3L,
-                    "Designing Data-Intensive Applications",
-                    "Noori",
-                    "9781449373320",
-                    2017,
-                    "Distributed Systems"
-            ),
+    // د نوي Book لپاره راتلونکې ID
+    private final AtomicLong nextId = new AtomicLong(104);
 
-            new Books(
-                    4L,
-                    "Spring in Action",
-                    "Abdul Qahar ",
-                    "9781617297571",
-                    2022,
-                    "Spring"
-            ),
 
-            new Books(
-                    5L,
-                    "Computer Networks",
-                    "Afgahn",
-                    "9780132126953",
-                    2010,
-                    "Networking"
-            )
-    );
+    // =====================================================
+    // GET - ټول Books
+    // =====================================================
 
     @GetMapping
     public List<Books> getAllBooks() {
+
         return books;
+    }
+
+
+    // =====================================================
+    // GET - د ID له مخې یو Book
+    // =====================================================
+
+    @GetMapping("/{id}")
+    public Books getBookById(@PathVariable Long id) {
+
+        return books.stream()
+                .filter(book -> book.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+
+    // =====================================================
+    // POST - نوی Book اضافه کول
+    // =====================================================
+
+    @PostMapping
+    public Books createBook(@RequestBody BookInput input) {
+
+        Long newId = nextId.getAndIncrement();
+
+        Books newBook = new Books(
+                newId,
+                input.getTitle(),
+                input.getAuthor(),
+                input.getIsbn(),
+                input.getPublishedYear(),
+                input.getCategory()
+        );
+
+        books.add(newBook);
+
+        return newBook;
     }
 }

@@ -1,34 +1,14 @@
 package edu.ku.bookapi.model;
 
-public class Books {
+public class BookInput {
 
-    private Long id;
     private String title;
     private String author;
     private String isbn;
     private int publishedYear;
     private String category;
 
-    public Books() {
-    }
-
-    public Books(Long id, String title, String author,
-                 String isbn, int publishedYear, String category) {
-
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.isbn = isbn;
-        this.publishedYear = publishedYear;
-        this.category = category;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    public BookInput() {
     }
 
     public String getTitle() {
