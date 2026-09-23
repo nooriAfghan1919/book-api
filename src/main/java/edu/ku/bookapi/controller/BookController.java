@@ -1,100 +1,90 @@
 package edu.ku.bookapi.controller;
 
+import edu.ku.bookapi.model.Book;
 import edu.ku.bookapi.model.BookInput;
-import edu.ku.bookapi.model.Books;
-
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
 @RequestMapping("/api/v1/books")
 public class BookController {
 
-    // زموږ موقتي کتابونه
-    private final List<Books> books =
-            new CopyOnWriteArrayList<>(
-                    List.of(
-                            new Books(
-                                    101L,
-                                    "Clean Code",
-                                    "Robert C. Martin",
-                                    "9780132350884",
-                                    2008,
-                                    "Software Engineering"
-                            ),
+    private final List<Book> books = new ArrayList<>(List.of(
+            new Book(1L, "Java Programming", "Abdul Qahar", 5),
+            new Book(2L, "Web Development", "Ahmad", 3),
+            new Book(3L, "Database Systems", "Ali", 4)
+    ));
 
-                            new Books(
-                                    102L,
-                                    "Effective Java",
-                                    "Joshua Bloch",
-                                    "9780134685991",
-                                    2018,
-                                    "Java"
-                            ),
-
-                            new Books(
-                                    103L,
-                                    "Spring in Action",
-                                    "Craig Walls",
-                                    "9781617297571",
-                                    2022,
-                                    "Spring"
-                            )
-                    )
-            );
-
-    // د نوي Book لپاره راتلونکې ID
-    private final AtomicLong nextId = new AtomicLong(104);
-
-
-    // =====================================================
-    // GET - ټول Books
-    // =====================================================
-
+    // 1. GET ALL BOOKS
     @GetMapping
-    public List<Books> getAllBooks() {
-
+    public List<Book> getAllBooks() {
         return books;
     }
 
+    // 2. GET BOOK BY ID
+    @GetMapping("/{bookId}")
+    public ResponseEntity<?> getBookById(
+            @PathVariable Long bookId
+    ) {
 
-    // =====================================================
-    // GET - د ID له مخې یو Book
-    // =====================================================
+        for (Book book : books) {
 
-    @GetMapping("/{id}")
-    public Books getBookById(@PathVariable Long id) {
+            if (book.id().equals(bookId)) {
+                return ResponseEntity.ok(book);
+            }
+        }
 
-        return books.stream()
-                .filter(book -> book.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        return ResponseEntity.notFound().build();
     }
 
+    // 3. PUT - UPDATE BOOK
+    @PutMapping("/{bookId}")
+    public ResponseEntity<?> updateBook(
+            @PathVariable Long bookId,
+            @RequestBody BookInput input
+    ) {
 
-    // =====================================================
-    // POST - نوی Book اضافه کول
-    // =====================================================
+        for (int i = 0; i < books.size(); i++) {
 
-    @PostMapping
-    public Books createBook(@RequestBody BookInput input) {
+            Book book = books.get(i);
 
-        Long newId = nextId.getAndIncrement();
+            if (book.id().equals(bookId)) {
 
-        Books newBook = new Books(
-                newId,
-                input.getTitle(),
-                input.getAuthor(),
-                input.getIsbn(),
-                input.getPublishedYear(),
-                input.getCategory()
-        );
+                Book updatedBook = new Book(
+                        book.id(),
+                        input.title(),
+                        input.author(),
+                        input.availableCopies()
+                );
 
-        books.add(newBook);
+                books.set(i, updatedBook);
 
-        return newBook;
+                return ResponseEntity.ok(updatedBook);
+            }
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+
+    // 4. DELETE BOOK
+    @DeleteMapping("/{bookId}")
+    public ResponseEntity<?> deleteBook(
+            @PathVariable Long bookId
+    ) {
+
+        for (int i = 0; i < books.size(); i++) {
+
+            if (books.get(i).id().equals(bookId)) {
+
+                books.remove(i);
+
+                return ResponseEntity.noContent().build();
+            }
+        }
+
+        return ResponseEntity.notFound().build();
     }
 }
